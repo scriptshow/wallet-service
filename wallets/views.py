@@ -60,9 +60,9 @@ class WalletList(CreateAPIView):
         }
 
         wallets = Wallet.objects.get_all_by_user(user)
-        response['data'] = []
+        response['wallets'] = []
         for wallet in wallets:
-            response['data'].append(wallet.to_json())
+            response['wallets'].append(wallet.to_json())
 
         response['status_code'] = status_code
 
@@ -92,7 +92,7 @@ class WalletInformation(CreateAPIView):
             wallet = Wallet.objects.get_by_token(wallet_token)
             if wallet:
                 if wallet.check_if_owner(user):
-                    response['data'] = wallet.to_json()
+                    response['wallet'] = wallet.to_json()
                 else:
                     status_code = status.HTTP_403_FORBIDDEN
                     response['success'] = 'False'
@@ -138,7 +138,7 @@ class WalletDeposit(CreateAPIView):
         if wallet:
             if wallet.check_if_owner(user):
                 wallet.deposit(deposit_amount)
-                response['data'] = wallet.to_json()
+                response['wallet'] = wallet.to_json()
             else:
                 status_code = status.HTTP_403_FORBIDDEN
                 response['success'] = 'False'
@@ -177,7 +177,7 @@ class WalletHistory(CreateAPIView):
             if wallet:
                 if wallet.check_if_owner(user):
                     histories = History.objects.get_full_history(wallet)
-                    response['data'] = [history.to_json() for history in histories]
+                    response['histories'] = [history.to_json() for history in histories]
                 else:
                     status_code = status.HTTP_403_FORBIDDEN
                     response['success'] = False

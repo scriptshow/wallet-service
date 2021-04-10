@@ -1,4 +1,4 @@
-from rest_framework.authentication import TokenAuthentication  # get_authorization_header
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from walletservice.settings import AUTH_TOKEN_EXPIRATION
 from datetime import datetime, timedelta
