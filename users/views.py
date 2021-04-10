@@ -6,7 +6,8 @@ from rest_framework.response import Response
 from rest_framework.schemas import ManualSchema
 from rest_framework.schemas import coreapi as coreapi_schema
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from users.authentication import ExpiringTokenAuthentication
 from walletservice.settings import AUTH_TOKEN_EXPIRATION
 from datetime import datetime, timedelta
 from pytz import utc
@@ -96,3 +97,18 @@ class ObtainAuthToken(APIView):
                 token, created = Token.objects.get_or_create(user=user)
 
         return Response({'token': token.key})
+
+
+class DestroyAuthToken(APIView):
+
+    """
+        DestroyAuthToken class is used as API endpoint to logout and destroy the token in use
+    """
+
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (ExpiringTokenAuthentication,)
+
+    def post(self, request, *args, **kwargs):
+        token = Token.objects.get(user=request.user)
+        token.delete()
+        return Response(status=status.HTTP_200_OK)
