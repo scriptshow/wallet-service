@@ -13,20 +13,16 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import path, include
-from rest_framework_swagger.views import get_swagger_view
-import clients.urls
-import companies.urls
-import wallets.urls
+from django.urls import path
+from wallets import views
 
-# Used to automatic document our API endpoints
-schema_view = get_swagger_view(title='Wallet Service API Documentation')
+app_name = 'wallets'
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('documentation/', schema_view),
-    path('client/', include(clients.urls, namespace="clients")),
-    path('company/', include(companies.urls, namespace="companies")),
-    path('wallet/', include(wallets.urls, namespace="wallets")),
+    path('create', views.WalletCreation.as_view(), name='wallet_creation'),
+    path('list', views.WalletList.as_view(), name='wallet_list'),
+    path('info/<slug:wallet_token>', views.WalletInformation.as_view(), name='wallet_information'),
+    path('deposit', views.WalletDeposit.as_view(), name='wallet_deposit'),
+    path('history/<slug:wallet_token>', views.WalletHistory.as_view(), name='wallet_history'),
+    path('charge', views.WalletCharge.as_view(), name='wallet_charge'),
 ]
