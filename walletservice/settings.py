@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+from os import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +26,7 @@ SECRET_KEY = 'django-insecure-1easqv1se885^sd9k=serpwac3dtb=7ndgcwke6p#kxy#7my9p
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', environ.get('ALLOWED_HOSTS')]
 
 
 # Application definition
@@ -37,6 +38,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework_swagger',
+    'rest_framework.authtoken',
+    'rest_framework',
+    'users',
+    'clients',
+    'companies',
+    'wallets',
 ]
 
 MIDDLEWARE = [
@@ -63,6 +71,10 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            # Adding the link from staticfiles template tag to static, due the compatibility issue with swagger
+            'libraries': {
+                'staticfiles': 'django.templatetags.static',
+            },
         },
     },
 ]
@@ -99,6 +111,42 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# User model used by the authentication system, we are overriding the default user for a custom one
+AUTH_USER_MODEL = 'users.User'
+
+# DRF Configuration
+REST_FRAMEWORK = {
+    # Allowing only request from users already authenticated
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated'
+    ],
+    # Our app will be based in authtokens system, using a custom one
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'users.authentication.ExpiringTokenAuthentication',
+    ),
+    'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
+    # Needed for Swagger automatic discover
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
+}
+
+# Swagger Configuration, disabling the session authentication and enabling our Token based authentication
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
+    'SECURITY_DEFINITIONS': {
+        'api_key': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization'
+        }
+    }
+}
+
+# Expiration time for our authentication tokens, in hours
+AUTH_TOKEN_EXPIRATION = 5
+
+# Number of wallets allowed by different profiles, set to 0 to unlimited.
+MAX_WALLETS_BY_COMPANY = 1  # It's important to do not change this value, for companies its mandatory to have only one
+MAX_WALLETS_BY_CLIENT = 0
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
