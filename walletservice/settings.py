@@ -16,7 +16,6 @@ from os import environ
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
@@ -159,6 +158,37 @@ AUTH_TOKEN_EXPIRATION = int(environ.get('WALLET_SERVICE_AUTH_TOKEN_EXPIRATION', 
 # Number of wallets allowed by different profiles, set to 0 to unlimited.
 MAX_WALLETS_BY_COMPANY = 1  # It's important to do not change this value, for companies its mandatory to have only one
 MAX_WALLETS_BY_CLIENT = int(environ.get('WALLET_SERVICE_MAX_WALLETS_BY_CLIENT', default='1'))
+
+# Logging configuration
+LOG_LEVEL = environ.get('WALLET_SERVICE_LOG_LEVEL', 'INFO').upper()
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'console': {
+            'format': '{levelname} - {asctime} [{module} {process:d} {thread:d}]: {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'console'
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': LOG_LEVEL,
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': LOG_LEVEL,
+            'propagate': False,
+        },
+    },
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
