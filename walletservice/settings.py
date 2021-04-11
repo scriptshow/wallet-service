@@ -28,6 +28,8 @@ DEBUG = bool(environ.get('WALLET_SERVICE_DEBUG_MODE', default='False'))
 
 ALLOWED_HOSTS = environ.get('WALLET_SERVICE_ALLOWED_HOSTS', default='*').split(' ')
 
+# Adding CORS configuration to allow queries from other origins
+CORS_ALLOWED_ORIGINS = environ.get('WALLET_SERVICE_ALLOWED_ORIGINS', default='http://127.0.0.1:8000').split(' ')
 
 # Application definition
 
@@ -41,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework_swagger',
     'rest_framework.authtoken',
     'rest_framework',
+    'corsheaders',
     'users',
     'clients',
     'companies',
@@ -50,6 +53,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # Added by the needed of corsheaders configuration
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -87,9 +91,17 @@ WSGI_APPLICATION = 'walletservice.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': environ.get('POSTGRES_DB_NAME'),
+        'HOST': environ.get('POSTGRES_DB_HOST'),
+        'PORT': environ.get('POSTGRES_DB_PORT'),
+        'USER': environ.get('POSTGRES_DB_USERNAME'),
+        'PASSWORD': environ.get('POSTGRES_DB_PASSWORD'),
+    },
+    # 'development': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
+    # }
 }
 
 
