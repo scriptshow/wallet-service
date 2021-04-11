@@ -261,7 +261,7 @@ class WalletCharge(CreateAPIView):
             try:
                 if target_wallet.make_charge(wallet_token, deposit_amount, summary):
                     logger.info("Charge has been done")
-                    response['data'] = target_wallet.to_json()
+                    response['wallet'] = target_wallet.to_json()
                 else:
                     logger.info("Charge couldn't be done, client has not funds")
                     status_code = status.HTTP_403_FORBIDDEN
