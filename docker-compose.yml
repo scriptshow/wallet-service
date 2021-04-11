@@ -1,0 +1,35 @@
+version: "3"
+services:
+  web:
+    build: . # compile docker image from current directory
+    ports:
+      - "8000:8000"
+    environment:
+      # Database configuration
+      POSTGRES_DB_HOST: "database"
+      POSTGRES_DB_PORT: "5432"
+      POSTGRES_DB_NAME: "wallet-service"
+      POSTGRES_DB_USERNAME: "wallet-user"
+      POSTGRES_DB_PASSWORD: "ch@ng3it"
+      # Application configuration
+      WALLET_SERVICE_LOG_LEVEL: "info"
+      WALLET_SERVICE_SECRET_KEY: "YOUR_SECRET_KEY_HERE"
+      WALLET_SERVICE_DEBUG_MODE: "False"
+      WALLET_SERVICE_ALLOWED_HOSTS: "localhost 127.0.0.1"
+      WALLET_SERVICE_ALLOWED_ORIGINS: "http://localhost:8000 http://127.0.0.1:8000"
+      # Expiration time in hours
+      WALLET_SERVICE_AUTH_TOKEN_EXPIRATION: "2"
+      # Max number of wallet creation allowed for clients, if 0 = unlimited
+      WALLET_SERVICE_MAX_WALLETS_BY_CLIENT: "0"
+    links:
+      - "database:database"
+    depends_on:
+      - database
+  database:
+    image: "postgres" # use latest official postgres version
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "wallet-user"
+      POSTGRES_PASSWORD: "ch@ng3it"
+      POSTGRES_DB: "wallet-service"
