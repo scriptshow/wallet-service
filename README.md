@@ -137,6 +137,20 @@ Ejecutar el siguiente comando para lanzar nuestro docker-compose:
 
 `docker-compose up`
 
+## Despliegue automático
+
+Para desplegar automáticamente nuestra aplicación con los valores por defecto, vamos a usar ansible,
+por lo que lo único que vamos a necesitar es una máquina con ansible instalado, llevarnos nuestro fichero
+'ansible_deployment.yml' y ejecutar el siguiente comando:
+
+`ansible-playbook ansible_deployment.yml -i HOSTNAME, -e "githubuser=GITHUB_USER" -e "githubpassword=GITHUB_PASS" --private-key "PRIVATE_KEY_PATH" -u USERNAME`
+
+- HOSTNAME: Debe ser reemplazado por la IP del servidor donde instalar nuestra aplicación
+- USERNAME: Debe ser reemplazado por el usuario del servidor donde nuestra aplicación va a ser desplegada
+- PRIVATE_KEY_PATH: Debe ser reemplazado por el path donde se encuentra la private_key para autenticarnos
+- GITHUB_USER: Debe ser reemplazado por el usuario de GitHub con permisos en el repositorio
+- GITHUB_PASS: Debe ser reemplazado por la contraseña de GitHub con premisos en el repositorio
+
 ## Documentación API
 
 Nuestra aplicación trae embebida su propia documentación de los endpoints API, simplemente hay que
