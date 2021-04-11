@@ -15,17 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework_swagger.views import get_swagger_view
 import clients.urls
 import companies.urls
 import wallets.urls
 
-# Used to automatic document our API endpoints
-schema_view = get_swagger_view(title='Wallet Service API Documentation')
-
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('documentation/', schema_view),
     path('client/', include(clients.urls, namespace="clients")),
     path('company/', include(companies.urls, namespace="companies")),
     path('wallet/', include(wallets.urls, namespace="wallets")),

@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework_swagger',
     'rest_framework.authtoken',
     'rest_framework',
     'corsheaders',
@@ -74,10 +73,6 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
-            # Adding the link from staticfiles template tag to static, due the compatibility issue with swagger
-            'libraries': {
-                'staticfiles': 'django.templatetags.static',
-            },
         },
     },
 ]
@@ -138,18 +133,6 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
     # Needed for Swagger automatic discover
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
-}
-
-# Swagger Configuration, disabling the session authentication and enabling our Token based authentication
-SWAGGER_SETTINGS = {
-    'USE_SESSION_AUTH': False,
-    'SECURITY_DEFINITIONS': {
-        'api_key': {
-            'type': 'apiKey',
-            'in': 'header',
-            'name': 'Authorization'
-        }
-    }
 }
 
 # Expiration time for our authentication tokens, in hours

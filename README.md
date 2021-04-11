@@ -103,6 +103,17 @@ empleado.
 
 # Documentación
 
+Aquí comienza la documentación de la aplicación finalizada, hay que tener en consideración las siguientes
+decisiones que se han tomado en el proyecto:
+- Tanto clientes como comercios usaran el mismo endpoint "/wallet" cuando interactúan con sus carteras,
+ya que las carteras son objetos idénticos para ambos.
+- Los comercios solamente podrán crearse una cartera, mientras que los clientes tienen el límite de carteras
+configurado en una variable, que por defecto son ilimitadas.
+- Tanto clientes como comercios pueden hacer depósitos en sus carteras.
+- Ya que los comercios también pueden hacer depósitos a sus propias carteras, se contempla de que un comercio
+pueda realizarle cargos a la cartera de otro comercio, ya que pueden interactuar entre ellos.
+- Solo los comercios podrán realizar cargos a otras carteras.
+
 ## Instalación
 
 La aplicación está basada en docker-compose, la cual trae embebida la aplicación y la base de datos a usar,
@@ -153,12 +164,255 @@ por lo que lo único que vamos a necesitar es una máquina con ansible instalado
 
 ## Documentación API
 
-Nuestra aplicación trae embebida su propia documentación de los endpoints API, simplemente hay que
-dirigirse a la url '/documentation/', y allí encontraremos la documentación para todos nuestros
-endpoints. Esta documentación es automática, y se refresca en cada cambio que se realiza en el código.
+### Endpoints para clientes
 
-Por defecto, solo tendrás visibilidad a los endpoints abiertos (login y signup), para obtener el acceso
-al resto de endpoints necesitarás presionar en el botón "Authenticate" e introducir tu token de 
-autenticación (previamente has tenido que crearte tu usuario, client o company), con la siguiente estructura:
+***Registro - Sign up***
 
-`Token asef786se6af97se8sa5e8f6se`
+Method: POST
+
+URL: _/client/signup_
+
+Body: `{
+    "email": "string",
+    "password": "string",
+    "client": {
+        "first_name": "string",
+        "last_name": "string",
+        "phone_number": "+34666666666"
+    }
+}`
+
+Response: `{"token": "auth_token"}`
+
+
+***Autenticación - Log in***
+
+Method: POST
+
+URL: _/client/login_
+
+Body: `{
+    "email": "string",
+    "password": "string"
+}`
+
+Response: `{"token": "auth_token"}`
+
+
+***Cerrar sesión - Log out***
+
+Method: POST
+
+URL: _/client/logout_
+
+Headers: `{
+    "Authorization": "Token auth_token"
+}`
+
+Body: `{}`
+
+Response: ``
+
+
+### Endpoints para comercios
+
+***Registro - Sign up***
+
+Method: POST
+
+URL: _/company/signup_
+
+Body: `{
+    "email": "string",
+    "password": "string",
+    "company": {
+        "name": "string",
+        "url": "string",
+        "first_name": "string",
+        "last_name": "string",
+        "phone_number": "+34666666666"
+    }
+}`
+
+Response: `{"token": "auth_token"}`
+
+
+***Autenticación - Log in***
+
+Method: POST
+
+URL: _/company/login_
+
+Body: `{
+    "email": "string",
+    "password": "string"
+}`
+
+Response: `{"token": "auth_token"}`
+
+
+***Cerrar sesión - Log out***
+
+Method: POST
+
+URL: _/company/logout_
+
+Headers: `{
+    "Authorization": "Token auth_token"
+}`
+
+Body: `{}`
+
+Response: ``
+
+
+### Endpoints para el uso de carteras
+
+
+***Crear nuevas carteras***
+
+Method: POST
+
+URL: _/wallet/create_
+
+Headers: `{
+    "Authorization": "Token auth_token"
+}`
+
+Body: `{}`
+
+Response: 
+`{
+    "success": "True",
+    "message": "Wallet has been created successfully",
+    "wallet": "your_wallet_token",
+    "status_code": 201
+}`
+
+
+***Hacer un depósito en una de tus carteras***
+
+Method: POST
+
+URL: _/wallet/deposit_
+
+Headers: `{
+    "Authorization": "Token auth_token"
+}`
+
+Body: `{
+    "wallet": "your_wallet_token",
+    "amount": "amount_to_deposit"
+}`
+
+Response: 
+`{
+    "success": "True",
+    "message": "Deposit has been done",
+    "wallet": {
+        "wallet": "your_wallet_token",
+        "balance": total_balance_after_deposit
+    },
+    "status_code": 200
+}`
+
+
+***Obtener la información y estado de una de tus carteras***
+
+Method: GET
+
+URL: _/wallet/info/< your_wallet_token >_
+
+Headers: `{
+    "Authorization": "Token auth_token"
+}`
+
+Response: 
+`{
+    "success": "True",
+    "message": "Wallet has been found",
+    "wallet": {
+        "wallet": "your_wallet_token",
+        "balance": current_balance
+    },
+    "status_code": 200
+}`
+
+
+***Obtener la información y estado de todas tus carteras***
+
+Method: GET
+
+URL: _/wallet/list_
+
+Headers: `{
+    "Authorization": "Token auth_token"
+}`
+
+Response: 
+`{
+    "success": "True",
+    "message": "Wallets have been found",
+    "wallets": [{
+        "wallet": "your_wallet_token",
+        "balance": current_balance
+    }, ...
+    ],
+    "status_code": 200
+}`
+
+
+***Hacer un cargo a una cartera cliente (solo disponible para comercios)***
+
+Method: POST
+
+URL: _/wallet/charge_
+
+Headers: `{
+    "Authorization": "Token auth_token"
+}`
+
+Body: `{
+    "wallet": "wallet_to_make_a_charge",
+    "amount": amount_to_be_charged,
+    "summary": "short description about the charge"
+}`
+
+Response: 
+`{
+   "success": "True",
+   "message": "Charge has been done",
+   "wallet": {
+        "wallet": "your_wallet_token",
+        "balance": current_balance_after_receive_the_charge
+    },
+    "status_code": 200
+}`
+
+
+***Obtener el histórico de operaciones de una de tus carteras***
+
+Method: GET
+
+URL: _/wallet/history/< your_wallet_token >_
+
+Headers: `{
+    "Authorization": "Token auth_token"
+}`
+
+Response: 
+`{
+    "success": "True",
+    "message": "History has been found",
+    "histories": [
+        {
+            "summary": "short description about the operation",
+            "source": "wallet_from_money_was_charged" or empty if its a deposit,
+            "target": "your_wallet_where_the_money_was_deposit",
+            "amount": the_amount_transfered_or_deposit,
+            "success": true,
+            "date": "2021-04-11T11:05:13.591091Z"
+        }, ...
+    ],
+    "status_code": 200
+}`
