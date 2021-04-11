@@ -15,8 +15,9 @@ services:
       WALLET_SERVICE_LOG_LEVEL: "info"
       WALLET_SERVICE_SECRET_KEY: "YOUR_SECRET_KEY_HERE"
       WALLET_SERVICE_DEBUG_MODE: "False"
-      WALLET_SERVICE_ALLOWED_HOSTS: "localhost 127.0.0.1"
-      WALLET_SERVICE_ALLOWED_ORIGINS: "http://localhost:8000 http://127.0.0.1:8000"
+      # Adding 35.158.103.186 as it's our lab server
+      WALLET_SERVICE_ALLOWED_HOSTS: "localhost 127.0.0.1 35.158.103.186"
+      WALLET_SERVICE_ALLOWED_ORIGINS: "http://localhost:8000 http://127.0.0.1:8000 http://35.158.103.186:8000"
       # Expiration time in hours
       WALLET_SERVICE_AUTH_TOKEN_EXPIRATION: "2"
       # Max number of wallet creation allowed for clients, if 0 = unlimited
