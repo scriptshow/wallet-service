@@ -21,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-1easqv1se885^sd9k=serpwac3dtb=7ndgcwke6p#kxy#7my9p'
+SECRET_KEY = environ.get('WALLET_SERVICE_SECRET_KEY', default='UNSECURE_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(environ.get('WALLET_SERVICE_DEBUG_MODE', default='False'))
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', environ.get('ALLOWED_HOSTS')]
+ALLOWED_HOSTS = environ.get('WALLET_SERVICE_ALLOWED_HOSTS', default='*').split(' ')
 
 
 # Application definition
@@ -142,11 +142,11 @@ SWAGGER_SETTINGS = {
 }
 
 # Expiration time for our authentication tokens, in hours
-AUTH_TOKEN_EXPIRATION = 5
+AUTH_TOKEN_EXPIRATION = int(environ.get('WALLET_SERVICE_AUTH_TOKEN_EXPIRATION', default='1'))
 
 # Number of wallets allowed by different profiles, set to 0 to unlimited.
 MAX_WALLETS_BY_COMPANY = 1  # It's important to do not change this value, for companies its mandatory to have only one
-MAX_WALLETS_BY_CLIENT = 0
+MAX_WALLETS_BY_CLIENT = int(environ.get('WALLET_SERVICE_MAX_WALLETS_BY_CLIENT', default='1'))
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
