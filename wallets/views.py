@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from users.authentication import ExpiringTokenAuthentication
 from wallets.serializers import WalletDepositSerializer, WalletChargeSerializer, WalletEmptySerializer
 from wallets.models import Wallet, History
-from companies.permissions import IsCompany
+from users.permissions import IsCompany
 from logging import getLogger
 
 logger = getLogger(__name__)

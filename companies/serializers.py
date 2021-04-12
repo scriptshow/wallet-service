@@ -1,3 +1,4 @@
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from companies.models import Company
 from users.models import User
@@ -25,7 +26,7 @@ class CompanyRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'password', 'company')
-        extra_kwargs = {'password': {'write_only': True}}
+        extra_kwargs = {'password': {'write_only': True, 'validators': [validate_password, ]}}
 
     def create(self, validated_data):
         company_data = validated_data.pop('company')
