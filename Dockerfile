@@ -10,6 +10,9 @@ ENV WALLET_SERVICE_AUTH_TOKEN_EXPIRATION '2'
 # Max number of wallet creation allowed for clients, if 0 = unlimited
 ENV WALLET_SERVICE_MAX_WALLETS_BY_CLIENT '0'
 
+# Recommended value: (2 * CPU_NUM) + 1
+ENV WALLET_SERVICE_WORKERS '5'
+
 # Database configuration
 ENV POSTGRES_DB_NAME 'DB_NAME'
 ENV POSTGRES_DB_HOST 'DB_HOST'
