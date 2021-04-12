@@ -407,8 +407,8 @@ Response:
     "histories": [
         {
             "summary": "short description about the operation",
-            "source": "wallet_from_money_was_charged" or empty if its a deposit,
-            "target": "your_wallet_where_the_money_was_deposit",
+            "source__token": "wallet_from_money_was_charged" or empty if its a deposit,
+            "target__token": "your_wallet_where_the_money_was_deposit",
             "amount": the_amount_transfered_or_deposit,
             "success": true,
             "date": "2021-04-11T11:05:13.591091Z"
