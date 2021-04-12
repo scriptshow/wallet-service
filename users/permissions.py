@@ -9,3 +9,13 @@ class IsCompany(BasePermission):
 
     def has_permission(self, request, view):
         return bool(request.user.is_company)
+
+
+class IsClient(BasePermission):
+
+    """
+    Allows access only to client users.
+    """
+
+    def has_permission(self, request, view):
+        return bool(request.user.is_client)

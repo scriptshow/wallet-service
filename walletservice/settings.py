@@ -16,18 +16,19 @@ from os import environ
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-1easqv1se885^sd9k=serpwac3dtb=7ndgcwke6p#kxy#7my9p'
+SECRET_KEY = environ.get('WALLET_SERVICE_SECRET_KEY', default='UNSECURE_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(environ.get('WALLET_SERVICE_DEBUG_MODE', default='False'))
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', environ.get('ALLOWED_HOSTS')]
+ALLOWED_HOSTS = environ.get('WALLET_SERVICE_ALLOWED_HOSTS', default='*').split(' ')
 
+# Adding CORS configuration to allow queries from other origins
+CORS_ALLOWED_ORIGINS = environ.get('WALLET_SERVICE_ALLOWED_ORIGINS', default='http://127.0.0.1:8000').split(' ')
 
 # Application definition
 
@@ -38,9 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework_swagger',
     'rest_framework.authtoken',
     'rest_framework',
+    'corsheaders',
     'users',
     'clients',
     'companies',
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # Added by the needed of corsheaders configuration
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -71,10 +73,6 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
-            # Adding the link from staticfiles template tag to static, due the compatibility issue with swagger
-            'libraries': {
-                'staticfiles': 'django.templatetags.static',
-            },
         },
     },
 ]
@@ -87,9 +85,17 @@ WSGI_APPLICATION = 'walletservice.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': environ.get('POSTGRES_DB_NAME'),
+        'HOST': environ.get('POSTGRES_DB_HOST'),
+        'PORT': environ.get('POSTGRES_DB_PORT'),
+        'USER': environ.get('POSTGRES_DB_USERNAME'),
+        'PASSWORD': environ.get('POSTGRES_DB_PASSWORD'),
+    },
+    # 'development': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
+    # }
 }
 
 
@@ -129,24 +135,43 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
 }
 
-# Swagger Configuration, disabling the session authentication and enabling our Token based authentication
-SWAGGER_SETTINGS = {
-    'USE_SESSION_AUTH': False,
-    'SECURITY_DEFINITIONS': {
-        'api_key': {
-            'type': 'apiKey',
-            'in': 'header',
-            'name': 'Authorization'
-        }
-    }
-}
-
 # Expiration time for our authentication tokens, in hours
-AUTH_TOKEN_EXPIRATION = 5
+AUTH_TOKEN_EXPIRATION = int(environ.get('WALLET_SERVICE_AUTH_TOKEN_EXPIRATION', default='1'))
 
 # Number of wallets allowed by different profiles, set to 0 to unlimited.
 MAX_WALLETS_BY_COMPANY = 1  # It's important to do not change this value, for companies its mandatory to have only one
-MAX_WALLETS_BY_CLIENT = 0
+MAX_WALLETS_BY_CLIENT = int(environ.get('WALLET_SERVICE_MAX_WALLETS_BY_CLIENT', default='1'))
+
+# Logging configuration
+LOG_LEVEL = environ.get('WALLET_SERVICE_LOG_LEVEL', 'INFO').upper()
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'console': {
+            'format': '{levelname} - {asctime} [{module} {process:d} {thread:d}]: {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'console'
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': LOG_LEVEL,
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': LOG_LEVEL,
+            'propagate': False,
+        },
+    },
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/

@@ -1,0 +1,64 @@
+- hosts: all
+  tasks:
+    - name: Install docker
+      apt:
+        name: docker
+        state: present
+      become: yes
+
+    - name: Install docker-compose
+      apt:
+        name: docker-compose
+        state: present
+      become: yes
+
+    - name: Start service docker, if not started
+      service:
+        name: docker
+        state: started
+      become: yes
+
+    - name: Install git package
+      apt:
+        name: git
+        state: present
+      become: yes
+
+    - name: Stopping the docker-compose, in case it's not the first deployment
+      shell: docker-compose down
+      args:
+        chdir: /opt/wallet-service
+      become: yes
+      ignore_errors: True
+
+    - name: Delete the repository if exists, in case it's not the first deployment
+      file:
+        state: absent
+        path: /opt/wallet-service/
+      become: yes
+      ignore_errors: True
+
+    - name: Clone a private repository into /opt.
+      git:
+        repo: https://{{ githubuser | urlencode }}:{{ githubpassword | urlencode }}@github.com/scriptshow/wallet-service-aplazame.git
+        force: yes
+        dest: /opt/wallet-service
+      become: yes
+
+    - name: Delete .git directory
+      file:
+        state: absent
+        path: /opt/wallet-service/.git
+      become: yes
+
+    - name: Build the docker-compose
+      shell: docker-compose build
+      args:
+        chdir: /opt/wallet-service
+      become: yes
+
+    - name: Running the docker-compose
+      shell: docker-compose up --detach
+      args:
+        chdir: /opt/wallet-service
+      become: yes
