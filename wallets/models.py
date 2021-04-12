@@ -93,6 +93,10 @@ class Wallet(models.Model):
         """ Return True if the user is the owner of this wallet, False if not """
         return self.user == user
 
+    def is_the_same(self, token):
+        """ Return True if token belong to this wallet, False if not """
+        return self.token == uuid.UUID(token)
+
     def deposit(self, amount):
         """ Make a deposit of money into the wallet """
         # Setting this transaction as atomic to easy rollback if something goes wrong
@@ -145,7 +149,13 @@ class HistoryManager(models.Manager):
 
     def get_full_history(self, wallet):
         """ Return a list of history instances related with the wallet specified, ordered from newer to older """
-        return History.objects.filter(models.Q(source=wallet) | models.Q(target=wallet)).order_by('-date').all()
+        # Adding .values() function to do not query each one of the relations with the wallets, and do retrieve
+        # all information with only one query
+        return History.objects\
+                      .filter(models.Q(source=wallet) | models.Q(target=wallet))\
+                      .order_by('-date')\
+                      .values('summary', 'source__token', 'target__token', 'amount', 'date', 'success')\
+                      .all()
 
 
 class History(models.Model):

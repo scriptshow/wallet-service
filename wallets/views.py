@@ -205,7 +205,7 @@ class WalletHistory(CreateAPIView):
                     logger.debug("User is the owner of this wallet")
                     histories = History.objects.get_full_history(wallet)
                     logger.debug("{0} history operations have been found".format(len(histories)))
-                    response['histories'] = [history.to_json() for history in histories]
+                    response['histories'] = histories
                     logger.info("Sending the operations histories to user")
                 else:
                     logger.info("User is not the owner of this wallet")
@@ -258,20 +258,25 @@ class WalletCharge(CreateAPIView):
         target_wallet = Wallet.objects.get_unique_by_user(user)
         if target_wallet:
             logger.debug("Company wallet to send the money: {0}".format(target_wallet.token))
-            try:
-                if target_wallet.make_charge(wallet_token, deposit_amount, summary):
-                    logger.info("Charge has been done")
-                    response['wallet'] = target_wallet.to_json()
-                else:
-                    logger.info("Charge couldn't be done, client has not funds")
-                    status_code = status.HTTP_403_FORBIDDEN
-                    response['success'] = False
-                    response['message'] = "Insufficient funds"
-            except Wallet.DoesNotExist:
-                logger.info("Client wallet does not exists")
-                status_code = status.HTTP_404_NOT_FOUND
-                response['success'] = 'False'
-                response['message'] = "Wallet has not been found"
+            if not target_wallet.is_the_same(wallet_token):
+                try:
+                    if target_wallet.make_charge(wallet_token, deposit_amount, summary):
+                        logger.info("Charge has been done")
+                        response['wallet'] = target_wallet.to_json()
+                    else:
+                        logger.info("Charge couldn't be done, client has not funds")
+                        status_code = status.HTTP_403_FORBIDDEN
+                        response['success'] = False
+                        response['message'] = "Insufficient funds"
+                except Wallet.DoesNotExist:
+                    logger.info("Client wallet does not exists")
+                    status_code = status.HTTP_404_NOT_FOUND
+                    response['success'] = 'False'
+                    response['message'] = "Wallet has not been found"
+            else:
+                status_code = status.HTTP_403_FORBIDDEN
+                response['success'] = False
+                response['message'] = "You can not make a charge to yourself"
         else:
             logger.info("Company has not any wallet created, it's needed to make a charge")
             status_code = status.HTTP_403_FORBIDDEN
