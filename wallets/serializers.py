@@ -1,17 +1,37 @@
 from rest_framework import serializers
-from wallets.models import Wallet
+from wallets.models import Wallet, History
 from wallets.validators import deposit_is_valid
 
 
-class WalletEmptySerializer(serializers.ModelSerializer):
+class WalletListSerializer(serializers.ListSerializer):
 
     """
-        WalletEmpty serializer is used for request which doesn't need to specify any field, like wallet creation
+        Wallet List serializer is used when listing multiple wallets
+    """
+
+    def output_data(self):
+        return [{'wallet': data['token'], 'balance': data['balance']} for data in self.data]
+
+
+class WalletSerializer(serializers.ModelSerializer):
+
+    """
+        Wallet serializer is used for generic wallet request, like wallet creation
     """
 
     class Meta:
         model = Wallet
-        fields = ()
+        list_serializer_class = WalletListSerializer
+        fields = '__all__'
+
+    def create(self, validated_data):
+        return Wallet.objects.create_new(user=validated_data['user'])
+
+    def can_create_new(self):
+        return Wallet.objects.can_create_new(self.validated_data['user'])
+
+    def output_data(self):
+        return {'wallet': self.data['token'], 'balance': self.data['balance']}
 
 
 class WalletDepositSerializer(serializers.ModelSerializer):
@@ -41,3 +61,14 @@ class WalletChargeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Wallet
         fields = ('wallet', 'amount', 'summary')
+
+
+class HistorySerializer(serializers.ModelSerializer):
+
+    """
+        History serializer is used for generic history request
+    """
+
+    class Meta:
+        model = History
+        fields = '__all__'

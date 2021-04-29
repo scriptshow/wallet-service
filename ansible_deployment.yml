@@ -40,7 +40,7 @@
 
     - name: Clone a private repository into /opt.
       git:
-        repo: https://{{ githubuser | urlencode }}:{{ githubpassword | urlencode }}@github.com/scriptshow/wallet-service-aplazame.git
+        repo: https://{{ githubuser | urlencode }}:{{ githubpassword | urlencode }}@github.com/scriptshow/wallet-service.git
         force: yes
         dest: /opt/wallet-service
       become: yes

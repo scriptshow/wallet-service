@@ -1,126 +1,128 @@
-# wallet-service-aplazame
+# wallet-service
 
-## Descripción
+**NOTE: The documentation of this project was done originally in spanish, the text has been translated to english.**
 
-Se desea desarrollar un servicio monedero con una API Rest que permite realizar pagos
-utilizando exclusivamente un token.
+## Description
 
-Se consideran distintos tipos de usuario con endpoints para realizar las siguientes operaciones:
+You want to develop a wallet service with a Rest API that allows you to make payments
+exclusively using a token.
 
-- Cliente: debe ser capaz de realizar el registro en el servicio, crear una o varias cuentas
-monedero (que se identificarán por un token único), recargar el saldo de sus cuentas, consultar
-el estado de sus cuentas y listar las operaciones de sus cuentas.
+Different types of endpoint users are considered to perform the following operations:
 
-- Comercio: debe ser capaz de realizar el registro en el servicio, crear una cuenta monedero,
-realizar cargos en la cuenta monedero de un cliente teniendo como referencia el token de la
-cuenta y listar las operaciones de su cuenta comercio.
+- Client: must be able to register for the service, create one or more accounts
+wallet (which will be identified by a unique token), recharge the balance of your accounts, consult
+the status of your accounts and list the operations of your accounts.
 
-En el histórico de operaciones se deben contemplar tanto las operaciones con éxito de recarga
-y cobro, como los intentos fallidos de cobro por falta de saldo.
+- Commerce: must be able to register for the service, create a wallet account,
+make charges to a customer's wallet account with reference to the token of the
+account and list the operations of your trading account.
 
-Los campos necesarios para el registro de clientes y comercios, así como el proceso de
-generación del token asociado a cada una de las cuentas quedan a elección del candidato. No
-es necesario encargarse del proceso de pago del cliente durante la operación de recarga del
-saldo de sus cuentas.
+The history of operations should include both successful recharge operations
+and collection, such as failed collection attempts due to lack of balance.
 
-## Objetivos a completar
+The fields necessary for the registration of customers and businesses, as well as the process of
+Generation of the token associated with each of the accounts is up to the candidate's choice. Not
+It is necessary to take care of the customer's payment process during the recharge operation of the
+balance of your accounts.
+
+## Objectives to complete
 
 
-1. Indica cómo se puede optimizar el rendimiento del servicio de listado de operaciones.
+1. Indicates how the performance of the trade listing service can be optimized.
 
-    - Respuesta: Según los requisitos de la aplicación, no especifican que pudiese haber 
-      algún tipo de filtro a la hora de listar las operaciones de las cuentas, incluso entro
-      en duda si para los clientes se quieren todas las operaciones de sus cuentas en una única
-      consulta, en vez de por cuenta monedero (como lo he implementado yo). Pero definitivamente, 
-      una de las mejores maneras de mejorar el rendimiento de esta consulta, es hacer un filtrado 
-      por rango de fechas, igualmente ya le puse un índice a la columna donde se guarda la fecha de 
-      cada transacción para su futuro uso. Adicionalmente, como esta tabla, a modo de histórico de operaciones, 
-      se espera que su crecimiento sea muy alto, para mejorar la performance se podrían hacer 
-      particiones de esta misma mediante el campo "date" (que guarda el datetime de cada operación), 
-      creando por ejemplo, una partición para cada dia de operaciones. Al usar la base de datos de 
-      postgresql, es muy fácil introducir una función para que te cree las particiones automáticamente.
+    - Answer: According to the application requirements, they do not specify that there could be
+      some kind of filter when listing the operations of the accounts, I even enter
+      in doubt if customers want all the operations of their accounts in a single
+      query, instead of by wallet account (as I have implemented it). But definitely,
+      one of the best ways to improve the performance of this query is to filter
+      by date range, also I already put an index to the column where the date of
+      each transaction for future use. Additionally, like this table, as a history of operations,
+      its growth is expected to be very high, to improve performance it could be done
+      partitions of it using the "date" field (which saves the datetime of each operation),
+      creating for example, a partition for each trading day. When using the database of
+      postgresql, it is very easy to introduce a function to create the partitions for you automatically.
 
-2. ¿Qué alternativas planteas en el caso que la base de datos relacional de la aplicación se
-convierta en un cuello de botella por saturación en las operaciones de lectura? ¿Y para las de
-escritura?
+2. What alternatives do you propose in the event that the application's relational database is
+become a bottleneck due to saturation in read operations? And for those of
+writing?
    
-    - Respuesta: Cuando el cuello de botella se genera en la parte de operaciones de lectura, debemos
-      de empezar a mirar si nuestra solución pudiera ser pasar por un sistema de cacheado de datos, como
-      pudiera ser Redis. Pero este sistema se necesita que los datos a consultar no cambien con 
-      muy alta frecuencia, si no estaríamos mostrando información desactualizada, o incluso, replicando
-      el problema con un sistema más complejo de mantener. Por otro lado también podríamos añadir
-      réplicas de solo lectura a nuestra base de datos, y pasar todas las operaciones de lectura
-      distribuyéndose entre las distintas réplicas.
-      Para la parte del cuello de botella en las operaciones de escritura, algunas bases de datos como
-      MySQL o PostgreSQL (la que hemos elegido para este proyecto!) cuentan con opciones para poder realizar
-      escrituras en bloques, en vez de fila a fila, esto seria util si los comercios de nuestra aplicación
-      necesitaran hacer un mismo cargo a multiples clientes (como si estuvieran cobrándose una suscripción,
-      por ejemplo). Otra opción para solucionar los problemas de escritura, es hacer distintas particiones
-      para la tabla de históricos (en nuestro caso la que más sobrecarga puede tener) y distribuirlas cada
-      una de ellas en distintos filesystem, usando discos físicos independientes, distribuyendo asi la 
-      carga de trabajo.
-      Finalmente también podemos optar por alguna solución que ayude a escalar horizontalmente las bases
-      de datos relacionales, en nuestro caso, usando PostgreSQL, seria Citus (www.citusdata.com/)
+    - Answer: When the bottleneck is generated in the reading operations part, we must
+      to start looking if our solution could be to go through a data caching system, such as
+      it could be Redis. But this system requires that the data to be consulted does not change with
+      very high frequency, otherwise we would be showing outdated information, or even replicating
+      the problem with a more complex system to maintain. On the other hand we could also add
+      read-only replicas to our database, and pass all read operations
+      distributed among the different replicas.
+      For the bottleneck part in write operations, some databases like
+      MySQL or PostgreSQL (the one we have chosen for this project!) Have options to perform
+      writes in blocks, instead of row by row, this would be useful if the trades of our application
+      they will need to make the same charge to multiple clients (as if they were charging a subscription,
+      for example). Another option to solve writing problems is to make different partitions
+      for the history table (in our case the one with the most overhead) and distribute them each
+      one of them in different filesystem, using independent physical disks, thus distributing the
+      Workload.
+      Finally we can also choose a solution that helps to scale the bases horizontally
+      relational data, in our case, using PostgreSQL, it would be Citus (www.citusdata.com/)
 
-3. Dicen que las bases de datos relacionales no escalan bien, se me ocurre montar el proyecto
-con alguna NoSQL, ¿qué me recomiendas?
+3. They say that relational databases do not scale well, it occurs to me to mount the project
+with some NoSQL, what do you recommend?
    
-    - Respuesta: Para las aplicaciones que manejan transacciones de dinero o información especialmente
-      sensible que se necesita que sea muy consistente, siempre se busca que cumplan los estándares
-      ACID (atomicity, consistency, isolation, durability) en los que las bases de datos relacionales
-      son el mejor candidato. No obstante, también hay algunas bases de datos NoSQL que cumplen estos 
-      estándares, como pueden ser: CouchDB o FoundationDB. Actualmente también existen muchas 
-      utilidades para poder escalar bases de datos SQL como Citus, por lo que personalmente
-      para esta aplicación, yo recomendaría el uso de alguna base de datos SQL.
+    - Answer: For applications that handle money or information transactions especially
+      sensitive that it needs to be very consistent, it is always sought that they meet the standards
+      ACID (atomicity, consistency, isolation, durability) where relational databases
+      they are the best candidate. However, there are also some NoSQL databases that comply with these
+      standards, such as: CouchDB or FoundationDB. Currently there are also many
+      utilities to scale SQL databases like Citus, so personally
+      for this application, I would recommend using some SQL database.
 
-4. ¿Qué tipo de métricas y servicios nos pueden ayudar a comprobar que la API y el servidor
-funcionan correctamente?
+4. What kind of metrics and services can help us verify that the API and the server
+they work right?
    
-    - Respuesta: Como parte de la monitorización, ya que nuestra aplicación esta basada en dockers,
-      el primer servicio a monitorizar sería el servicio de docker, seguido de las instancias de docker
-      creadas para esta aplicación (la imagen de la web, y la imagen de la base de datos), que estén 
-      arriba y sin reiniciarse infinitamente.
-      Adicionalmente se le puede añadir un extra de monitorización a algunos endpoints de la API Rest,
-      incluso se podría crear un único endpoint de '/status', que únicamente devolviera el código 200, 
-      significando asi el correcto funcionamiento del servicio REST. Otro chequeo extra que se puede
-      añadir, es el de hacer log in con una cuenta de usuario para este tipo de automatización. En la
-      parte del servidor, se le puede añadir métricas para ver el consumo de memoria, cpu y I/O de
-      los filesystem, asi como el espacio libre en disco.
+    - Answer: As part of the monitoring, since our application is based on dockers,
+      the first service to monitor would be the docker service, followed by the docker instances
+      created for this application (the image from the web, and the image from the database), that are
+      up and without infinitely resetting.
+      Additionally, an extra monitoring can be added to some endpoints of the Rest API,
+      You could even create a single '/ status' endpoint, which would only return the code 200,
+      thus meaning the correct functioning of the REST service. Another extra check that can be
+      add, is to log in with a user account for this type of automation. In the
+      part of the server, you can add metrics to see the consumption of memory, cpu and I / O of
+      the filesystem, as well as the free disk space.
 
 ## Bonus
 
-1. Nos gustaría contemplar que las operaciones de recarga y cobro sean en todo momento
-atómicas, es decir, si se intenta cobrar dos operaciones al mismo tiempo solo deben ser
-aceptadas si existe dinero suficiente en la cuenta para completar ambas.
+1. We would like to contemplate that the recharge and collection operations are at all times
+atomic, that is, if you try to charge two operations at the same time, they should only be
+accepted if there is enough money in the account to complete both.
 
-Debe evitarse que por algún error en la integración del comercio se repitan operaciones de
-cobro.
+It should be avoided that due to some error in the integration of the trade, operations of
+payment.
 
-2. Desplegar el proyecto en la instancia proporcionada. Idealmente con Docker, puedes incluirlo
-todo en el único repositorio. Puedes elegir entre hacer un despliegue manual o automatizado.
-En el segundo caso, también te pedimos que nos puedas proporcionar el código que hayas
-empleado.
+2. Deploy the project in the instance provided. Ideally with Docker, you can include it
+all in the single repository. You can choose to do a manual or automated deployment.
+In the second case, we also ask you to provide us with the code that you have
+employee.
 
-# Documentación
+# Documentation
 
-Aquí comienza la documentación de la aplicación finalizada, hay que tener en consideración las siguientes
-decisiones que se han tomado en el proyecto:
-- Tanto clientes como comercios usaran el mismo endpoint "/wallet" cuando interactúan con sus carteras,
-ya que las carteras son objetos idénticos para ambos.
-- Los comercios solamente podrán crearse una cartera, mientras que los clientes tienen el límite de carteras
-configurado en una variable, que por defecto son ilimitadas.
-- Tanto clientes como comercios pueden hacer depósitos en sus carteras.
-- Ya que los comercios también pueden hacer depósitos a sus propias carteras, se contempla de que un comercio
-pueda realizarle cargos a la cartera de otro comercio, ya que pueden interactuar entre ellos.
-- Solo los comercios podrán realizar cargos a otras carteras.
+Here begins the documentation of the finished application, the following must be taken into account
+decisions that have been made in the project:
+- Both customers and businesses will use the same endpoint "/ wallet" when interacting with their wallets,
+since the wallets are identical objects for both.
+- Merchants can only create one portfolio, while customers have the portfolio limit
+set to a variable, which by default are unlimited.
+- Both customers and businesses can make deposits in their portfolios.
+- Since merchants can also make deposits to their own portfolios, it is contemplated that a merchant
+You can charge the portfolio of another merchant, since they can interact with each other.
+- Only merchants will be able to charge other portfolios.
 
-## Instalación
+## Installation
 
-La aplicación está basada en docker-compose, la cual trae embebida la aplicación y la base de datos a usar,
-por lo que lo único necesario, es tener instalado docker y docker-compose.
+The application is based on docker-compose, which brings the application and the database to be used embedded,
+so all you need is to have docker and docker-compose installed.
 
-## Configuración
-Dentro de docker-compose.yml encontrarás los siguientes parámetros, los cuales puedes modificar:
+## Configuration
+Inside docker-compose.yml you will find the following parameters, which you can modify:
 
 WALLET_SERVICE_LOG_LEVEL -> Values allowed: ['debug', 'info', 'warning', 'error', 'critical']
 
@@ -128,45 +130,45 @@ WALLET_SERVICE_SECRET_KEY -> Secret key used by Django project
 
 WALLET_SERVICE_DEBUG_MODE -> Values allowed: ['True', 'False']
 
-WALLET_SERVICE_ALLOWED_HOSTS -> Por defecto: "localhost 127.0.0.1"
+WALLET_SERVICE_ALLOWED_HOSTS -> Default: "localhost 127.0.0.1"
 
-WALLET_SERVICE_ALLOWED_ORIGINS -> Por defecto: "http://localhost:8000 http://127.0.0.1:8000"
+WALLET_SERVICE_ALLOWED_ORIGINS -> Default: "http: // localhost: 8000 http://127.0.0.1:8000"
 
-WALLET_SERVICE_AUTH_TOKEN_EXPIRATION -> Tiempo de expiración para nuestro token de autenticación (en horas)
+WALLET_SERVICE_AUTH_TOKEN_EXPIRATION -> Expiration time for our authentication token (in hours)
 
-WALLET_SERVICE_MAX_WALLETS_BY_CLIENT -> Limite de carteras creadas por cada cliente, 0 para ilimitadas
+WALLET_SERVICE_MAX_WALLETS_BY_CLIENT -> Limit of portfolios created by each client, 0 for unlimited
 
-## Ejecutando la aplicación
+## Running the application
 
-Dirigirse donde se encuentra nuestro docker-compose.yml dentro del proyecto.
+Go to where our docker-compose.yml is located within the project.
 
-Ejecutar el siguiente comando para construir nuestro docker-compose:
+Run the following command to build our docker-compose:
 
 `docker-compose build`
 
-Ejecutar el siguiente comando para lanzar nuestro docker-compose:
+Run the following command to launch our docker-compose:
 
 `docker-compose up`
 
-## Despliegue automático
+## Automatic deployment
 
-Para desplegar automáticamente nuestra aplicación con los valores por defecto, vamos a usar ansible,
-por lo que lo único que vamos a necesitar es una máquina con ansible instalado, llevarnos nuestro fichero
-'ansible_deployment.yml' y ejecutar el siguiente comando:
+To automatically deploy our application with the default values, we are going to use ansible,
+so the only thing we are going to need is a machine with ansible installed, take our file with us
+'ansible_deployment.yml' and run the following command:
 
-`ansible-playbook ansible_deployment.yml -i HOSTNAME, -e "githubuser=GITHUB_USER" -e "githubpassword=GITHUB_PASS" --private-key "PRIVATE_KEY_PATH" -u USERNAME`
+`ansible-playbook ansible_deployment.yml -i HOSTNAME, -e" githubuser = GITHUB_USER "-e" githubpassword = GITHUB_PASS "--private-key" PRIVATE_KEY_PATH "-u USERNAME`
 
-- HOSTNAME: Debe ser reemplazado por la IP del servidor donde instalar nuestra aplicación
-- USERNAME: Debe ser reemplazado por el usuario del servidor donde nuestra aplicación va a ser desplegada
-- PRIVATE_KEY_PATH: Debe ser reemplazado por el path donde se encuentra la private_key para autenticarnos
-- GITHUB_USER: Debe ser reemplazado por el usuario de GitHub con permisos en el repositorio
-- GITHUB_PASS: Debe ser reemplazado por la contraseña de GitHub con premisos en el repositorio
+- HOSTNAME: It must be replaced by the IP of the server where to install our application
+- USERNAME: It must be replaced by the user of the server where our application is going to be deployed
+- PRIVATE_KEY_PATH: It must be replaced by the path where the private_key is found to authenticate us
+- GITHUB_USER: Must be replaced by the GitHub user with permissions on the repository
+- GITHUB_PASS: It must be replaced by the GitHub password with premises in the repository
 
-## Documentación API
+## API Documentation
 
-### Endpoints para clientes
+### Endpoints for clients
 
-***Registro - Sign up***
+***Sign up***
 
 Method: POST
 
@@ -185,7 +187,7 @@ Body: `{
 Response: `{"token": "auth_token"}`
 
 
-***Autenticación - Log in***
+***Log in***
 
 Method: POST
 
@@ -199,7 +201,7 @@ Body: `{
 Response: `{"token": "auth_token"}`
 
 
-***Cerrar sesión - Log out***
+***Log out***
 
 Method: POST
 
@@ -214,9 +216,9 @@ Body: `{}`
 Response: ``
 
 
-### Endpoints para comercios
+### Endpoints for companies
 
-***Registro - Sign up***
+***Sign up***
 
 Method: POST
 
@@ -237,7 +239,7 @@ Body: `{
 Response: `{"token": "auth_token"}`
 
 
-***Autenticación - Log in***
+***Log in***
 
 Method: POST
 
@@ -251,7 +253,7 @@ Body: `{
 Response: `{"token": "auth_token"}`
 
 
-***Cerrar sesión - Log out***
+***Log out***
 
 Method: POST
 
@@ -266,10 +268,10 @@ Body: `{}`
 Response: ``
 
 
-### Endpoints para el uso de carteras
+### Endpoints managing wallets
 
 
-***Crear nuevas carteras***
+***Create new wallets***
 
 Method: POST
 
@@ -283,14 +285,11 @@ Body: `{}`
 
 Response: 
 `{
-    "success": "True",
-    "message": "Wallet has been created successfully",
-    "wallet": "your_wallet_token",
-    "status_code": 201
+    "wallet": "your_wallet_token"
 }`
 
 
-***Hacer un depósito en una de tus carteras***
+***Make a deposit***
 
 Method: POST
 
@@ -307,17 +306,12 @@ Body: `{
 
 Response: 
 `{
-    "success": "True",
-    "message": "Deposit has been done",
-    "wallet": {
-        "wallet": "your_wallet_token",
-        "balance": total_balance_after_deposit
-    },
-    "status_code": 200
+    "wallet": "your_wallet_token",
+    "balance": total_balance_after_deposit
 }`
 
 
-***Obtener la información y estado de una de tus carteras***
+***Get information from a wallet***
 
 Method: GET
 
@@ -329,17 +323,12 @@ Headers: `{
 
 Response: 
 `{
-    "success": "True",
-    "message": "Wallet has been found",
-    "wallet": {
-        "wallet": "your_wallet_token",
-        "balance": current_balance
-    },
-    "status_code": 200
+    "wallet": "your_wallet_token",
+    "balance": current_balance
 }`
 
 
-***Obtener la información y estado de todas tus carteras***
+***Get information for all your wallets***
 
 Method: GET
 
@@ -350,19 +339,15 @@ Headers: `{
 }`
 
 Response: 
-`{
-    "success": "True",
-    "message": "Wallets have been found",
-    "wallets": [{
+`[
+    {
         "wallet": "your_wallet_token",
         "balance": current_balance
     }, ...
-    ],
-    "status_code": 200
-}`
+]`
 
 
-***Hacer un cargo a una cartera cliente (solo disponible para comercios)***
+***Make a charge to a client (only available for companies)***
 
 Method: POST
 
@@ -380,17 +365,12 @@ Body: `{
 
 Response: 
 `{
-   "success": "True",
-   "message": "Charge has been done",
-   "wallet": {
-        "wallet": "your_wallet_token",
-        "balance": current_balance_after_receive_the_charge
-    },
-    "status_code": 200
+    "wallet": "your_wallet_token",
+    "balance": current_balance_after_receive_the_charge
 }`
 
 
-***Obtener el histórico de operaciones de una de tus carteras***
+***Get the operation history for a wallet***
 
 Method: GET
 
@@ -401,18 +381,13 @@ Headers: `{
 }`
 
 Response: 
-`{
-    "success": "True",
-    "message": "History has been found",
-    "histories": [
-        {
-            "summary": "short description about the operation",
-            "source__token": "wallet_from_money_was_charged" or empty if its a deposit,
-            "target__token": "your_wallet_where_the_money_was_deposit",
-            "amount": the_amount_transfered_or_deposit,
-            "success": true,
-            "date": "2021-04-11T11:05:13.591091Z"
-        }, ...
-    ],
-    "status_code": 200
-}`
+`[
+    {
+        "summary": "short description about the operation",
+        "source__token": "wallet_from_money_was_charged" or empty if its a deposit,
+        "target__token": "your_wallet_where_the_money_was_deposit",
+        "amount": the_amount_transfered_or_deposit,
+        "success": true,
+        "date": "2021-04-11T11:05:13.591091Z"
+    }, ...
+]`

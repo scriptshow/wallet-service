@@ -107,8 +107,8 @@ class ClientWalletTests(APITestCase):
         url = reverse('wallets:wallet_list')
         response = self.client.get(url, {}, format='json', HTTP_AUTHORIZATION=self.client_token)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue('wallets' in response.data)
-        self.assertTrue(response.data['wallets'][0]['wallet'] == self.client_wallet.token)
+        self.assertTrue(len(response.data) > 0)
+        self.assertTrue(response.data[0]['wallet'] == str(self.client_wallet.token))
 
     def test_list_wallet_history(self):
         """ Ensure client can check the history for a specific wallet """
